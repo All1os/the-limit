@@ -1,45 +1,45 @@
 {
- "yuzler.png": {
+ "card-faces.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/16413663966663086316/9DCAC8EAA895F5D8A51BCEF5C12B276F1F88A9F1/",
   "sha1": "9dcac8eaa895f5d8a51bcef5c12b276f1f88a9f1"
  },
- "fis-enforced.png": {
+ "token-enforced.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/11038345382066736888/53975FCA295CBFCDF0C17AE2A72855960EF8AC7A/",
   "sha1": "53975fca295cbfcdf0c17ae2a72855960ef8ac7a"
  },
- "fis-first.png": {
+ "token-first.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/18233778535452840000/D8717CAB896D9E83B9BA9F8C44E31143A1677267/",
   "sha1": "d8717cab896d9e83b9ba9f8c44e31143a1677267"
  },
- "kural.png": {
+ "rules.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/12073881332122322771/C4A90752D6D3BEE8F5F30DBADB6600F37886AA3A/",
   "sha1": "c4a90752d6d3bee8f5f30dbadb6600f37886aa3a"
  },
- "fis-cashed.png": {
+ "token-cashed.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/10128964903947478008/E3B4FC4D6E9C541CEC5DA05FBC3BE58768EE0546/",
   "sha1": "e3b4fc4d6e9c541cec5da05fbc3be58768ee0546"
  },
- "arka-hedef.png": {
+ "back-objective.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/12615683244016623812/45E8065F00D29A5A48CB4FC80E45B8886AE27C47/",
   "sha1": "45e8065f00d29a5a48cb4fc80e45b8886ae27c47"
  },
- "tur.png": {
+ "round-track.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/16166275310915649841/892216CC66C63A98828FF19C84F2D0076F12BDDD/",
   "sha1": "892216cc66c63a98828ff19c84f2d0076f12bddd"
  },
- "fis-round.png": {
+ "token-round.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/11834133648951068097/FE46BCD31ABD541FD6C4EEE98B2A51060573B7F6/",
   "sha1": "fe46bcd31abd541fd6c4eee98b2a51060573b7f6"
  },
- "arka-npc.png": {
+ "back-npc.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/9429976814779693305/9DA6CDEF80DA9A0F71D5C64DEEA8A4199D235CDE/",
   "sha1": "9da6cdef80da9a0f71d5c64deea8a4199d235cde"
  },
- "fis-ability.png": {
+ "token-ability.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/9389150987803804156/7F4D738F7B3E7D00382DBF6FFBF0BE89B09940DA/",
   "sha1": "7f4d738f7b3e7d00382dbf6ffbf0be89b09940da"
  },
- "arka-karakter.png": {
+ "back-character.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/11489499280375920782/3ABE21385B38F7F3EB0A5A2B446542CCC0E3D1E5/",
   "sha1": "3abe21385b38f7f3eb0a5a2b446542ccc0e3d1e5"
  },
@@ -47,15 +47,15 @@
   "url": "https://steamusercontent-a.akamaihd.net/ugc/17627026075770316024/EC4030E6E27D568B8683CEAC93FC3DACDA80F7DC/",
   "sha1": "ec4030e6e27d568b8683ceac93fc3dacda80f7dc"
  },
- "fis-bodyguard.png": {
+ "token-bodyguard.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/13826211141880677431/691E728C79600651807D377FB5E0643560FAA2B3/",
   "sha1": "691e728c79600651807d377fb5e0643560faa2b3"
  },
- "arka-ana.png": {
+ "back-main.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/14953057444246296552/B7C70E0B8184EE0AB9ED43505E08A25AD772CE67/",
   "sha1": "b7c70e0b8184ee0ab9ed43505e08a25ad772ce67"
  },
- "fis-loan.png": {
+ "token-loan.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/12599649287881594517/715BAE7B436D2743A821B73D4712D6F3D89AF30E/",
   "sha1": "715bae7b436d2743a821b73d4712d6f3d89af30e"
  }

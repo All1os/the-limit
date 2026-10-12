@@ -1,19 +1,19 @@
-"""THE LIMIT prototipinin TTS save'ini kurar (vault: board-games/the-limit/GDD-prototype.md).
+"""Builds the Tabletop Simulator save for THE LIMIT prototype (rules: GDD-prototype.md).
 
-Tek betik: kart yüzleri (yazı, resimsiz, GDD §13.1), arka yüzler, skor paneli, tur çizelgesi,
-fişler, kural tahtası ve save JSON'u. Resimler TTS'in Mods/ klasörüne kopyalanır: macOS
-TTS'in ~/Desktop'u okumasına izin vermiyor (SHOWDOWN'da 2026-10-05 doğrulandı).
-Kart metni GDD'den birebir; GDD değişirse buradaki listeyi güncelleyip yeniden çalıştır.
-Çalıştır: python3 kur.py
+One script: card faces (text only, no art, GDD §13.1), card backs, score panel, round track,
+tokens, rules board and the save JSON. Images are copied into TTS's Mods/ folder: macOS
+doesn't let TTS read ~/Desktop (checked on SHOWDOWN, 2026-10-05).
+Card text is copied word for word from the GDD; if the GDD changes, update the list here and run it again.
+Run: python3 build.py
 """
 import json, math, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).parent
-OUT = ROOT / "tts-dosyalari"
+OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/the-limit"
-SAVES = Path.home() / "Library/Tabletop Simulator/Saves/prototipler"  # Yavuz save'leri bu klasörde topladı
+SAVES = Path.home() / "Library/Tabletop Simulator/Saves/prototipler"  # Yavuz keeps the prototype saves in this folder
 SAVE_NAME = "THE-LIMIT-prototype"
 OUT.mkdir(exist_ok=True)
 ASSETS.mkdir(parents=True, exist_ok=True)
@@ -23,14 +23,14 @@ def f(name, size): return ImageFont.truetype(FONT + name, size)
 
 PAPER, INK = (245, 240, 228), (25, 22, 20)
 GOLD, FELT = (212, 175, 75), (22, 64, 44)
-# GDD §13.3 renkleri; NPC / karakter / hedef için ayrı tonlar.
+# Colours from GDD §13.3; separate shades for NPC / character / objective.
 COL = {"POINT": (40, 140, 70), "NEGATIVE": (225, 120, 30), "CRASH": (190, 30, 30),
        "SPECIAL": (40, 90, 180), "NPC TRIGGER": (115, 50, 155), "NPC": (55, 65, 75),
        "CHARACTER": (165, 125, 35), "OBJECTIVE": (30, 30, 30)}
 
-# ------------------------------------------------------------------ kart listesi (GDD §6–§9)
-# (ID, deste, tip satırı, isim, metin, büyük yazı | None, adet)
-# deste: 1 = ana, 2 = NPC, 3 = karakter, 4 = hedef. Yedek 6 Trigger ayrı (RESERVE).
+# ------------------------------------------------------------------ card list (GDD §6–§9)
+# (ID, deck, type line, name, text, big value | None, copies)
+# deck: 1 = main, 2 = NPC, 3 = character, 4 = objective. The 6 reserve Triggers are separate (RESERVE).
 CARDS = [
     ("P05", 1, "POINT", "+5", "Gain 5 points.", "+5", 8),
     ("P10", 1, "POINT", "+10", "Gain 10 points.", "+10", 7),
@@ -80,12 +80,12 @@ CARDS = [
 ]
 RESERVE_N = 6
 _n = {k: sum(c[6] for c in CARDS if c[1] == k) for k in (1, 2, 3, 4)}
-assert _n == {1: 50, 2: 20, 3: 5, 4: 5}, _n   # GDD §13.8 sayım kontrolü
+assert _n == {1: 50, 2: 20, 3: 5, 4: 5}, _n   # card count check, GDD §13.8
 
 
-# ------------------------------------------------------------------ kart yüzleri
-# 400x560: 10 sütun x 5 satır = 4000x2800, TTS'in 4096 sınırının altında. Yazı-only kart
-# masada okunsun diye isim ve büyük değer iri.
+# ------------------------------------------------------------------ card faces
+# 400x560: 10 columns x 5 rows = 4000x2800, under TTS's 4096 limit. On a text-only card
+# the name and the big value are large so they can be read on the table.
 W, H = 400, 560
 COLS, ROWS = 10, 5
 
@@ -115,7 +115,7 @@ def face(c):
     d.rectangle((0, 0, W - 1, H - 1), outline=col, width=14)
     d.rectangle((0, 0, W, 64), fill=col)
     d.text((W / 2, 34), typ, font=f("Arial Black.ttf", 28), fill=PAPER, anchor="mm")
-    if big:   # Point / Negative / CRASH: isim = büyük değer, iki kez yazma
+    if big:   # Point / Negative / CRASH: the name is the big value, don't write it twice
         d.text((W / 2, 200), big, font=fit(d, big, "Arial Black.ttf", 150, W - 60), fill=col, anchor="mm")
         y = 330
     else:
@@ -139,7 +139,7 @@ INDEX = {}
 for i, c in enumerate(CARDS):
     INDEX[c[0]] = i
     sheet.paste(face(c), ((i % COLS) * W, (i // COLS) * H))
-sheet.save(OUT / "yuzler.png")
+sheet.save(OUT / "card-faces.png")
 
 
 def back(fn, title, col, sub=""):
@@ -152,15 +152,15 @@ def back(fn, title, col, sub=""):
     im.save(OUT / fn)
 
 
-back("arka-ana.png", "THE LIMIT", (90, 15, 20), "MAIN DECK")
-back("arka-npc.png", "NPC", (35, 45, 55), "THE HOUSE")
-back("arka-karakter.png", "CHARACTER", (120, 90, 25))
-back("arka-hedef.png", "SECRET", (15, 15, 15), "OBJECTIVE")
+back("back-main.png", "THE LIMIT", (90, 15, 20), "MAIN DECK")
+back("back-npc.png", "NPC", (35, 45, 55), "THE HOUSE")
+back("back-character.png", "CHARACTER", (120, 90, 25))
+back("back-objective.png", "SECRET", (15, 15, 15), "OBJECTIVE")
 
 
-# ------------------------------------------------------------------ masa parçaları
+# ------------------------------------------------------------------ table pieces
 def panel_img():
-    # Skor paneli: rakamı Lua butonu yazar; resim sadece zemin + başlık.
+    # Score panel: a Lua button writes the number; the image is only the background + title.
     im = Image.new("RGB", (900, 560), FELT)
     d = ImageDraw.Draw(im)
     d.rounded_rectangle((8, 8, 892, 552), 40, outline=GOLD, width=14)
@@ -177,7 +177,7 @@ def tracker_img():
         d.rounded_rectangle((x, 30, x + 320, 390), 24, outline=GOLD, width=6)
         d.text((x + 160, 110), f"ROUND {k + 1}", font=f("Arial Black.ttf", 50), fill=GOLD, anchor="mm")
         d.text((x + 160, 300), f"NPC Triggers: {n}", font=f("Arial Bold.ttf", 34), fill=PAPER, anchor="mm")
-    im.save(OUT / "tur.png")
+    im.save(OUT / "round-track.png")
 
 
 def token_img(fn, text, col):
@@ -218,37 +218,37 @@ def rules_img():
         font = f("Arial Black.ttf", 56) if head else f("Arial Bold.ttf", 44)
         d.text((60, y), line, font=font, fill=(90, 15, 20) if head else INK)
         y += 74 if head else 62
-    im.save(OUT / "kural.png")
+    im.save(OUT / "rules.png")
 
 
 panel_img(); tracker_img(); rules_img()
-TOKENS = {  # isim: (dosya, renk) — GDD §2 durum fişleri + ilk oyuncu + yetenek
-    "CASHED OUT": ("fis-cashed.png", (30, 120, 60)),
-    "ENFORCED": ("fis-enforced.png", (170, 30, 30)),
-    "LOAN DEBT": ("fis-loan.png", (210, 110, 20)),
-    "BODYGUARD": ("fis-bodyguard.png", (35, 80, 170)),
-    "ABILITY USED": ("fis-ability.png", (80, 80, 80)),
-    "FIRST PLAYER": ("fis-first.png", (160, 120, 20)),
-    "ROUND": ("fis-round.png", (200, 160, 40)),
+TOKENS = {  # name: (file, colour): GDD §2 status tokens + first player + ability
+    "CASHED OUT": ("token-cashed.png", (30, 120, 60)),
+    "ENFORCED": ("token-enforced.png", (170, 30, 30)),
+    "LOAN DEBT": ("token-loan.png", (210, 110, 20)),
+    "BODYGUARD": ("token-bodyguard.png", (35, 80, 170)),
+    "ABILITY USED": ("token-ability.png", (80, 80, 80)),
+    "FIRST PLAYER": ("token-first.png", (160, 120, 20)),
+    "ROUND": ("token-round.png", (200, 160, 40)),
 }
 for name, (fn, col) in TOKENS.items():
     token_img(fn, name, col)
 
 for png in OUT.glob("*.png"):
     shutil.copy(png, ASSETS / png.name)
-# Paylaşılabilir save için Steam Cloud adresleri (bulut.json; Yavuz TTS Cloud Manager'dan yükledi,
-# adresler önbellekteki dosyalarla piksel eşleştirilerek çıkarıldı, 2026-10-05). Resim o günden
-# beri değiştiyse sha1 tutmaz → yerel yol kullanılır; o resmi yeniden yükleyip bulut.json'u güncelle.
+# Steam Cloud URLs for a shareable save (cloud_urls.json; Yavuz uploaded the images with the TTS Cloud Manager,
+# and the URLs were matched to the cached files pixel by pixel, 2026-10-05). If an image has changed since then,
+# its sha1 no longer matches and the local path is used; upload that image again and update cloud_urls.json.
 import hashlib
-_BULUT = json.loads((ROOT / "bulut.json").read_text()) if (ROOT / "bulut.json").exists() else {}
+_CLOUD = json.loads((ROOT / "cloud_urls.json").read_text()) if (ROOT / "cloud_urls.json").exists() else {}
 
 
 def url(p):
     fn = Path(p).name
-    b = _BULUT.get(fn)
+    b = _CLOUD.get(fn)
     if b and hashlib.sha1((ASSETS / fn).read_bytes()).hexdigest() == b["sha1"]:
         return b["url"]
-    print(f"  yerel (bulutta yok/eski): {fn}")
+    print(f"  local (not in the cloud, or changed): {fn}")
     return str(ASSETS / fn)
 
 # ================================================================== save JSON
@@ -274,14 +274,14 @@ def base(name, transform, nick="", desc="", **kw):
     return o
 
 
-BACKS = {1: "arka-ana.png", 2: "arka-npc.png", 3: "arka-karakter.png", 4: "arka-hedef.png"}
-# Anahtar 5 = yedek Trigger'lar: ana destenin aynısı (yüz + arka), ayrı anahtar sadece
-# betiğin onları RESET'te yedek yığına geri ayırabilmesi için.
-CDECK = {k: {"FaceURL": url("yuzler.png"), "BackURL": url(BACKS[1 if k == 5 else k]),
+BACKS = {1: "back-main.png", 2: "back-npc.png", 3: "back-character.png", 4: "back-objective.png"}
+# Key 5 = reserve Triggers: the same as the main deck (face + back); a separate key only so that
+# the script can split them back into the reserve pile on RESET.
+CDECK = {k: {"FaceURL": url("card-faces.png"), "BackURL": url(BACKS[1 if k == 5 else k]),
              "NumWidth": COLS, "NumHeight": ROWS, "BackIsHidden": True, "UniqueBack": False, "Type": 0}
          for k in (1, 2, 3, 4, 5)}
 BY_ID = {c[0]: c for c in CARDS}
-CS = 1.1   # kart ölçeği: ~2.4 x 3.4 masa birimi (1.3 kalabalık görünüyordu)
+CS = 1.1   # card scale: about 2.4 x 3.4 table units (1.3 looked crowded)
 
 
 def card(cid, key=None, tags=()):
@@ -299,7 +299,7 @@ def deck(cards, pos, nick, key):
 
 
 def tile(fn, transform, nick, locked=True, circle=False, thick=0.1, **kw):
-    # Stretch=False: karo resmin en/boy oranını korur.
+    # Stretch=False: the tile keeps the image's aspect ratio.
     return base("Custom_Tile", transform, nick, Locked=locked,
                 CustomImage={"ImageURL": url(fn), "ImageSecondaryURL": "", "ImageScalar": 1.0,
                              "WidthScale": 0.0,
@@ -311,9 +311,9 @@ def token(name, x=0.0, z=0.0, y=1.5):
     return tile(TOKENS[name][0], tr(x, z, 180.0, s=0.55, y=y), name, locked=False, circle=True, thick=0.2)
 
 
-# ------------------------------------------------------------------ yerleşim
-# Table_RPG (SHOWDOWN'da ölçüldü: eller z=±21, x=±31). 5 koltuk: altta 2, sağda 1, üstte 1, solda 1.
-# rot: koltuğun bakış açısı (0 = alttan masaya bakıyor). Kartlar oyuncuya dönük: rot + 180.
+# ------------------------------------------------------------------ layout
+# Table_RPG (measured on SHOWDOWN: hands at z=±21, x=±31). 5 seats: 2 at the bottom, 1 right, 1 top, 1 left.
+# rot: the seat's viewing angle (0 = looking at the table from the bottom). Cards face the player: rot + 180.
 SEATS = [
     ("White", -11.0, -21.0, 0.0), ("Red", 11.0, -21.0, 0.0), ("Yellow", 31.0, 0.0, 270.0),
     ("Green", 0.0, 21.0, 180.0), ("Blue", -31.0, 0.0, 90.0),
@@ -321,7 +321,7 @@ SEATS = [
 
 
 def local(seat, u, v):
-    """Koltuğa göre koordinat: u = oyuncunun sağı, v = masanın ortasına doğru."""
+    """Coordinates relative to a seat: u = the player's right, v = towards the middle of the table."""
     _, hx, hz, rot = seat
     a = math.radians(rot)
     fx, fz = math.sin(a), math.cos(a)
@@ -329,17 +329,17 @@ def local(seat, u, v):
     return round(hx + u * rx + v * fx, 2), round(hz + u * rz + v * fz, 2)
 
 
-# Oyuncu alanı (u, v). Alttaki iki koltuk 22 birim aralıklı; alan u=-8.5..6.5 → çakışmıyor.
-A_CHAR = (-5.5, 7.5)                          # karakter kartı (açık)
-A_PANEL = (-1.2, 7.2)                         # skor paneli
-A_KEEP = [(2.6, 7.5), (5.3, 7.5)]             # tutulan kartlar: DOUBLE, SAFE PASS, Smuggled
-A_PLAY = [(-4.8 + k * 2.6, 11.0) for k in range(5)]   # DRAW / NPC kartları buraya açılır
-A_TOKEN = (-8.2, 7.5)                         # durum fişleri (CASH OUT buraya koyar)
-A_ABILITY = (-8.2, 10.2)                      # yetenek kullanıldı fişi
-A_OBJ = (-5.5, 4.2)                           # hedef sayacı
+# Player area (u, v). The two bottom seats are 22 units apart; the area spans u=-8.5..6.5, so they don't overlap.
+A_CHAR = (-5.5, 7.5)                          # character card (face up)
+A_PANEL = (-1.2, 7.2)                         # score panel
+A_KEEP = [(2.6, 7.5), (5.3, 7.5)]             # kept cards: DOUBLE, SAFE PASS, Smuggled
+A_PLAY = [(-4.8 + k * 2.6, 11.0) for k in range(5)]   # DRAW / NPC cards are revealed here
+A_TOKEN = (-8.2, 7.5)                         # status tokens (CASH OUT puts one here)
+A_ABILITY = (-8.2, 10.2)                      # ability-used token
+A_OBJ = (-5.5, 4.2)                           # objective counter
 
-# Orta (x, z). Alt/üst koltukların oyun sırası z=±7.2'ye, yan koltuklarınki x=±17.7'ye
-# kadar geliyor; orta bunların içinde.
+# Middle (x, z). The play rows of the top/bottom seats reach z=±7.2 and those of the side seats x=±17.7;
+# the middle sits inside them.
 MAIN_POS, DISC_POS, RES_POS = (-9.5, 3.0), (-6.0, 3.0), (-13.0, 3.0)
 NPC_POS, NPCD_POS = (6.0, 3.0), (9.5, 3.0)
 CHAR_POS, OBJ_POS = (9.5, -2.5), (13.0, -2.5)
@@ -356,8 +356,8 @@ snap = lambda p, rot=None: snaps.append(
      **({"Rotation": {"x": 0.0, "y": rot, "z": 0.0}} if rot is not None else {})})
 
 PANEL_LUA = r'''
--- Skor paneli (GDD §13.4): büyük rakam + butonlar, 0'ın altına inmez.
--- Global betik setScore / getScore'u çağırır (NEW ROUND sıfırlar).
+-- Score panel (GDD §13.4): big number + buttons, never below 0.
+-- The Global script calls setScore / getScore (NEW ROUND resets it).
 score = 0
 STEPS = {-20, -10, -5, 5, 10, 20}
 
@@ -433,11 +433,11 @@ objs += [deck(main, MAIN_POS, "Main Deck", 1), deck(reserve, RES_POS, "Reserve N
 for p in (MAIN_POS, DISC_POS, RES_POS, NPC_POS, NPCD_POS, CHAR_POS, OBJ_POS):
     snap(p, 180.0)
 
-objs.append(tile("tur.png", tr(*TRACK, 180.0, s=3.5, y=1.05), "Round tracker"))
+objs.append(tile("round-track.png", tr(*TRACK, 180.0, s=3.5, y=1.05), "Round tracker"))
 objs.append(token("ROUND", *ROUND_STEPS[0], y=1.3))
-objs.append(tile("kural.png", tr(*RULES_POS, 180.0, s=3.3, y=1.05), "Turn flow"))
+objs.append(tile("rules.png", tr(*RULES_POS, 180.0, s=3.3, y=1.05), "Turn flow"))
 objs.append(token("FIRST PLAYER", *FIRST_POS))
-# Sonsuz torba: elle fiş almak için. Butonlar fişleri torbasız kendisi üretir.
+# Infinite bag: for taking tokens by hand. The buttons create tokens themselves, without the bag.
 for name, (x, z) in BAGS.items():
     objs.append(base("Infinite_Bag", tr(x, z, 180.0, s=0.8, y=1.3), name, Locked=True,
                      ContainedObjects=[token(name)], ColorDiffuse={"r": 0.25, "g": 0.2, "b": 0.15}))
@@ -447,15 +447,15 @@ for name, (x, z) in BAGS.items():
 TOKEN_DATA = {n: token(n) for n in ("CASHED OUT",)}
 
 LUA = r"""
--- THE LIMIT prototip tuşları (GDD §13.6). Elle oynamak için hiçbiri şart değil.
---   START      karakter (açık) + gizli hedef (ele) dağıtır, desteleri karıştırır, 1. tur.
---   DRAW       basan oyuncunun önüne ana desteden bir kart açar (PUSH da budur).
---   NPC        basanın önüne NPC kartı açar.
---   DISCARD    oyun sıralarındaki açık kartları ıskartalara atar (ana / NPC ayrı).
---   CASH OUT   basanın önüne CASHED OUT fişi koyar, skorunu duyurur.
---   NEW ROUND  her şeyi toplar, 2. turdan itibaren 2 yedek Trigger ekler, karıştırır,
---              skorları ve durum fişlerini sıfırlar (GDD §4.1, A3).
---   RESET      oyunu en başa alır.
+-- THE LIMIT prototype buttons (GDD §13.6). None of them is needed to play by hand.
+--   START      deals characters (face up) + secret objectives (to the hand), shuffles the decks, round 1.
+--   DRAW       reveals a main deck card in front of the player who pressed it (this is also PUSH).
+--   NPC        reveals an NPC card in front of the player who pressed it.
+--   DISCARD    moves the face-up cards in the play rows to the discard piles (main / NPC kept apart).
+--   CASH OUT   puts a CASHED OUT token in front of the player who pressed it and announces their score.
+--   NEW ROUND  gathers everything, from round 2 on adds 2 reserve Triggers, shuffles,
+--              resets the scores and status tokens (GDD §4.1, A3).
+--   RESET      takes the game back to the very start.
 SEATS = {__SEATS__}
 MAIN_POS, DISC_POS, RES_POS = {__MAIN__}, {__DISC__}, {__RES__}
 NPC_POS, NPCD_POS, CHAR_POS, OBJ_POS = {__NPC__}, {__NPCD__}, {__CHAR__}, {__OBJ__}
@@ -472,7 +472,7 @@ end
 
 local function near(p, q, r) return (p.x - q[1])^2 + (p.z - q[2])^2 < r * r end
 
--- CustomDeck anahtarı: 1 ana, 2 NPC, 3 karakter, 4 hedef, 5 yedek Trigger.
+-- CustomDeck key: 1 main, 2 NPC, 3 character, 4 objective, 5 reserve Trigger.
 local function kind(o)
   local d = o.getData()
   local id = d.CardID or (d.DeckIDs and d.DeckIDs[1])
@@ -492,7 +492,7 @@ local function seatOf(player)
   broadcastToColor("Sit at a colored seat first.", player.color, {1, 0.5, 0.5})
 end
 
--- Masada oturan renkler; 3'ten azsa (tek başına test) beş koltuğun hepsi.
+-- Colours seated at the table; if fewer than 3 (testing alone), all five seats.
 local function activeSeats()
   local seated, out = {}, {}
   for _, c in ipairs(getSeatedPlayers()) do seated[c] = true end
@@ -511,7 +511,7 @@ local function setAllScores(v)
   for _, o in ipairs(getObjectsWithTag("score")) do o.call("setScore", {value = v}) end
 end
 
--- Bir yığına (deste/kart) başka kartları putObject ile anında ekler. Taban yoksa ilk kart taban olur.
+-- Adds other cards to a pile (deck or card) at once with putObject. With no base, the first card becomes the base.
 local function gather(keys, pos, faceUp, skip)
   local base = pileAt(pos)
   if base and not keys[kind(base)] then base = nil end
@@ -549,7 +549,7 @@ local function moveRoundMarker()
   end
 end
 
--- Oyuncunun oyun sırasında ilk boş yer.
+-- The first empty spot in the player's play row.
 local function freePlaySpot(s)
   for _, q in ipairs(s.play) do
     local busy = false
@@ -566,7 +566,7 @@ local function reveal(player, pos, discPos, label)
   if not s then return end
   local d = pileAt(pos)
   if not d and discPos then
-    -- NPC destesi bitince ıskartası karıştırılıp yeni deste olur (GDD §7).
+    -- When the NPC deck runs out, its discard is shuffled into a new deck (GDD §7).
     d = pileAt(discPos)
     if d then d.setPosition({pos[1], 1.5, pos[2]}) d.setRotation({0, 180, 180}) if d.type == "Deck" then d.shuffle() end end
   end
@@ -590,7 +590,7 @@ function drawNPC(player) reveal(player, NPC_POS, NPCD_POS, "NPC Deck") end
 function discardPlay(player)
   local n = 0
   for _, o in ipairs(getObjects()) do
-    -- Sadece ana (1, 5) ve NPC (2) kartları: karakter / hedef kartı sıraya düşse bile atılmaz.
+    -- Only main (1, 5) and NPC (2) cards: a character / objective card is never discarded, even if it lands in the row.
     local k = o.type == "Card" and kind(o)
     if k and (k == 1 or k == 2 or k == 5) and not o.is_face_down then
       for _, s in ipairs(SEATS) do
@@ -622,7 +622,7 @@ function cashOut(player)
   broadcastToAll((player.steam_name or s.color) .. " (" .. s.color .. ") CASHES OUT with " .. tostring(v) .. ".", {0.5, 1, 0.6})
 end
 
--- Bütün ana + yedek kartları ana desteye, NPC'leri NPC destesine toplar (GDD §4.1 adım 2).
+-- Gathers all main + reserve cards into the main deck and the NPCs into the NPC deck (GDD §4.1 step 2).
 local function collectRound()
   gather({[1] = true, [5] = true}, MAIN_POS, false, pileAt(RES_POS))
   gather({[2] = true}, NPC_POS, false)
@@ -633,7 +633,7 @@ function newRound(player)
   if round >= 4 then broadcastToAll("Round 4 is the last possible round.", {1, 0.5, 0.5}) return end
   round = round + 1
   collectRound()
-  -- 2. turdan itibaren her tur 2 yedek Trigger (6 / 8 / 10 / 12).
+  -- From round 2 on, 2 reserve Triggers each round (6 / 8 / 10 / 12).
   local res = pileAt(RES_POS)
   Wait.time(function()
     local m = pileAt(MAIN_POS)
@@ -657,7 +657,7 @@ function resetGame(player)
   gather({[2] = true}, NPC_POS, false)
   gather({[3] = true}, CHAR_POS, false)
   gather({[4] = true}, OBJ_POS, false)
-  -- Yedek Trigger'ları (anahtar 5) ana desteden geri ayır.
+  -- Split the reserve Triggers (key 5) back out of the main deck.
   Wait.time(function()
     local m = pileAt(MAIN_POS)
     if m and m.type == "Deck" then
@@ -721,7 +721,7 @@ REPL = {
 for k, v in REPL.items():
     LUA = LUA.replace(k, v)
 
-# Sol üstte küçük (SHOWDOWN'daki yer): TTS'in üst menüsünü kapatmasın.
+# Small, top left (the same place as in SHOWDOWN), so it doesn't cover TTS's top menu.
 BTN = '  <Button onClick="{f}" fontSize="14" color="{c}" textColor="#F5ECD7">{t}</Button>'
 XML = ('<VerticalLayout height="282" width="130" rectAlignment="UpperLeft" offsetXY="60 -50" spacing="6">\n'
        + "\n".join(BTN.format(f=f_, c=c_, t=t_) for f_, c_, t_ in [
@@ -743,4 +743,4 @@ save = {
 }
 (OUT / f"{SAVE_NAME}.json").write_text(json.dumps(save, indent=1, ensure_ascii=False))
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
-print(f"{len(objs)} obje, {len(snaps)} snap → {SAVES / (SAVE_NAME + '.json')}")
+print(f"{len(objs)} objects, {len(snaps)} snap → {SAVES / (SAVE_NAME + '.json')}")

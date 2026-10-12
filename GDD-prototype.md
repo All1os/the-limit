@@ -4,7 +4,7 @@ created: 2026-10-05
 type: project
 status: draft
 tags: [board-game, the-limit, gdd, tts]
-source: kaynak-The-Limit-orijinal.docx
+source: The-Limit-original-draft.docx
 ---
 # THE LIMIT — Prototype GDD v0.1
 
